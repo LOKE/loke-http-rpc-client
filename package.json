@@ -1,0 +1,18 @@
+{
+  "name": "loke-http-rpc-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "author": "Dominic Smith",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^0.15.2"
+  },
+  "dependencies": {
+    "find-up": "^1.1.2",
+    "got": "^6.3.0"
+  }
+}
