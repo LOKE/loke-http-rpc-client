@@ -52,7 +52,7 @@ class Client {
     return this.createInterface(meta);
   }
 
-  request(methodName, params, timout) {
+  request(methodName, params, timeout) {
     const requestUrl = url.format({
       hostname: this.host,
       path: path.join(this.path, methodName)
