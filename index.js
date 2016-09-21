@@ -34,8 +34,11 @@ function getMetaPath(serviceName) {
 }
 
 class Client {
-  constructor(host, options) {
-    this.host = host;
+  constructor(baseURL, options) {
+    var parsedURL = url.parse(baseURL);
+    this.protocol = parsedURL.protocol;
+    this.host = parsedURL.host;
+    this.port = parsedURL.port;
 
     Object.assign(this, {
       path: '/rpc',
@@ -53,9 +56,12 @@ class Client {
   }
 
   request(methodName, params, timeout) {
+
     const requestUrl = url.format({
-      hostname: this.host,
-      path: path.join(this.path, methodName)
+      protocol: this.protocol,
+      host: this.host,
+      port: this.port,
+      pathname: path.join(this.path, methodName)
     });
 
     return got.post(requestUrl, {
