@@ -13,9 +13,9 @@ exports.load = function (host, serviceName, options) {
   return client.load(metaPath);
 };
 
-exports.createClient = function (host, options) {
-  return new Client(host, options);
-}
+// exports.createClient = function (host, options) {
+//   return new Client(host, options);
+// }
 
 function rootModuleDir() {
   let mod = module;
@@ -94,7 +94,7 @@ class Client {
     .catch(res => {
       if (res.status < 500) {
         const err = new Error(res.body.message);
-        err.code =req.body.code;
+        err.code = req.body.code;
         throw err;
       }
       throw res;
@@ -103,18 +103,18 @@ class Client {
 
   createInterface(meta) {
     const rpcInterface = {};
-    const multiArgs = meta.multiArgs || false;
+    const multiArg = meta.multiArg || false;
     const serviceName = meta.serviceName;
+    const self = this;
 
     meta.interfaces.forEach(iface => {
-      rpcInterface[iface.methodName] = () => {
+      rpcInterface[iface.methodName] = function () {
         const args = Array.prototype.slice.call(arguments);
-        const params = multiArgs ? args :  args[0];
-
-        return this.request(iface.methodName, params, iface.methodTimeout);
+        const params = multiArg ? args : args[0];
+        if (!multiArg && params && (typeof params !== 'object')) throw new Error('HTTP RPC expected a single arguments object, or none, simple values are not supported');
+        return self.request(iface.methodName, params, iface.methodTimeout);
       };
     });
-
     return rpcInterface;
   }
 }
