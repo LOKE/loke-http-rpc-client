@@ -73,14 +73,7 @@ class Client {
       timeout,
     })
     .then(res => res.body)
-    .catch(res => {
-      if (res.status < 500) {
-        const err = new Error(res.body.message);
-        err.code =req.body.code;
-        throw err;
-      }
-      throw res;
-    });
+    .catch(mapError);
   }
 
   getMeta() {
@@ -91,14 +84,7 @@ class Client {
 
     return got(requestUrl, { json: true })
     .then(res => res.body)
-    .catch(res => {
-      if (res.status < 500) {
-        const err = new Error(res.body.message);
-        err.code = req.body.code;
-        throw err;
-      }
-      throw res;
-    });
+    .catch(mapError);
   }
 
   createInterface(meta) {
@@ -117,4 +103,14 @@ class Client {
     });
     return rpcInterface;
   }
+}
+
+function mapError(err) {
+  if (err.statusCode < 500) {
+    console.log(err);
+    const newErr = new Error(err.response.body.message);
+    newErr.code = err.response.body.code;
+    throw newErr;
+  }
+  throw err;
 }
