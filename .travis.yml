@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+- '6'
+- '4'
+deploy:
+  provider: npm
+  email: npm@loke.com.au
+  api_key:
+    secure: nO9xmHYfIiljcV5zJyUfwJxRAdvGgp5WU9sSdHC1lP9yTXpzc+m/0xKpgTXQ7IGDh2qSAx9Wd0H7Rvpwx9Pmq2qDUeLp/84/kRoaXsBUxPv71SlshtzxgcLDcxyLNaxZY2fawAVqHp7zSxgxO18qPwpbcRANUvswxVULMkUmzTJJY6897tUvCY5LaNujTLzbgV/dwJdfGbaEqh36BKoEQz1msopXu0TKfKkwSU86PXtOySw6cN2isrl2yZNWvZyr/rVGJgkroD0FGkORMGg6a4cMKKFk4TL6EhHpc/cjVwXepY2GyP89V4bxEd19jSUIAjqYhQcTJ94X9nc4diahR2KIQpdCDpU9EWkELH89Zi1apIx/ylK2u/3COWvbtHx2GMvXhFM3PWbsh2nb3s0zs7CdgM4yNI/3OA2r0TmP5BmQfRfYxve2AZUV2yjJuxvguW49rJNW8H7VS9Nm454tgZc3N0UPGU6SrbZUkEaq3NpaFhd7/WJ5pg3M/0Gnlw2yBgmy95j/i0wWh5o73EyaujrM8GeLP3Ynn0md1tyQ68wHMReEAhxZs9EEXoyVG6U29YomsBZQA2UVokGTYcfPG3UpGvS087dA5Rs0llCDyCBfWTbLw491C8sTsyg0DYgzeLpZ04GaVJuaiBDbIKokiBeXtMKkwnxu2yxr2mM+zQE=
+  on:
+    tags: true
+    repo: LOKE/loke-http-rpc-client
