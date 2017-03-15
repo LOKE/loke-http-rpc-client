@@ -3,8 +3,16 @@ const url = require('url');
 const path = require('path');
 const got = require('got');
 const findUp = require('find-up');
+const pFinally = require('p-finally');
+const pTap = require('p-tap');
+
+const {Histogram, Counter} = require('prom-client');
 
 const IPC_MANIFESTS_FOLDER = 'ipc_manifests';
+
+const requestDuration = new Histogram('http_rpc_client_request_duration_seconds', 'Duration of rpc requests from the client', ['service', 'method']);
+const requestCount = new Counter('http_rpc_client_requests_total', 'The total number of rpc requests from the client', ['service', 'method']);
+const failureCount = new Counter('http_rpc_client_failures_total', 'The total number of rpc failures from the client', ['service', 'method']);
 
 exports.load = function (host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
@@ -56,15 +64,14 @@ class Client {
   }
 
   request(methodName, params, timeout) {
+    const requestMeta = {service: this.formatUrl(), method: methodName};
+    const end = requestDuration.startTimer(requestMeta);
 
-    const requestUrl = url.format({
-      protocol: this.protocol,
-      host: this.host,
-      port: this.port,
-      pathname: path.join(this.path, methodName)
-    });
+    requestCount.inc(requestMeta);
 
-    return got.post(requestUrl, {
+    const requestUrl = this.formatUrl(methodName)
+
+    const result = got.post(requestUrl, {
       body: JSON.stringify(params),
       headers: {
         'Content-Type': 'application/json'
@@ -73,14 +80,25 @@ class Client {
       timeout,
     })
     .then(res => res.body)
+    .catch(pTap.catch(() => failureCount.inc(requestMeta)))
     .catch(mapError);
+
+    return pFinally(result, end)
+  }
+
+  formatUrl(methodName) {
+    const pathname = methodName ? path.join(this.path, methodName) : this.path;
+
+    return url.format({
+      protocol: this.protocol,
+      host: this.host,
+      port: this.port,
+      pathname: pathname
+    });
   }
 
   getMeta() {
-    const requestUrl = url.format({
-      hostname: this.host,
-      path: this.path
-    });
+    const requestUrl = this.formatUrl();
 
     return got(requestUrl, { json: true })
     .then(res => res.body)
