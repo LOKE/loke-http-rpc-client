@@ -80,7 +80,7 @@ class Client {
       timeout,
     })
     .then(res => res.body)
-    .catch(pTap.catch(function() { failureCount.inc(requestMeta); }))
+    .catch(pTap.catch(() => failureCount.inc(requestMeta)))
     .catch(mapError);
 
     return pFinally(result, end)
