@@ -77,6 +77,7 @@ class Client {
         'Content-Type': 'application/json'
       },
       json: true,
+      retries: 0,
       timeout,
     })
     .then(res => res.body)
