@@ -14,7 +14,7 @@ exports.create = function() {
   const server = http.createServer(app);
 
   return new Promise((resolve, reject) => {
-    server.listen(0, err => {
+    server.listen(0, "127.0.0.1", err => {
       if (err) {
         return reject(err);
       }
