@@ -4,15 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ava"
+    "fix": "eslint . --fix",
+    "lint": "eslint .",
+    "posttest": "npm run lint",
+    "test": "ava -v"
   },
   "author": "Dominic Smith",
   "license": "ISC",
   "devDependencies": {
     "ava": "^0.15.2",
+    "eslint": "^5.9.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-prettier": "^3.0.0",
     "express": "^4.15.2",
     "pify": "^2.3.0",
-    "prom-client": "7.x"
+    "prettier": "^1.15.2",
+    "prom-client": "^11.2.0"
   },
   "dependencies": {
     "find-up": "^1.1.2",

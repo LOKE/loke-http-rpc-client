@@ -1,20 +1,32 @@
-'use strict';
-const url = require('url');
-const path = require('path');
-const got = require('got');
-const findUp = require('find-up');
-const pFinally = require('p-finally');
-const pTap = require('p-tap');
+"use strict";
+const url = require("url");
+const path = require("path");
+const got = require("got");
+const findUp = require("find-up");
+const pFinally = require("p-finally");
+const pTap = require("p-tap");
 
-const {Histogram, Counter} = require('prom-client');
+const { Histogram, Counter } = require("prom-client");
 
-const IPC_MANIFESTS_FOLDER = 'ipc_manifests';
+const IPC_MANIFESTS_FOLDER = "ipc_manifests";
 
-const requestDuration = new Histogram('http_rpc_client_request_duration_seconds', 'Duration of rpc requests from the client', ['service', 'method']);
-const requestCount = new Counter('http_rpc_client_requests_total', 'The total number of rpc requests from the client', ['service', 'method']);
-const failureCount = new Counter('http_rpc_client_failures_total', 'The total number of rpc failures from the client', ['service', 'method']);
+const requestDuration = new Histogram({
+  name: "http_rpc_client_request_duration_seconds",
+  help: "Duration of rpc requests from the client",
+  labelNames: ["service", "method"]
+});
+const requestCount = new Counter({
+  name: "http_rpc_client_requests_total",
+  help: "The total number of rpc requests from the client",
+  labelNames: ["service", "method"]
+});
+const failureCount = new Counter({
+  name: "http_rpc_client_failures_total",
+  help: "The total number of rpc failures from the client",
+  labelNames: ["service", "method"]
+});
 
-exports.load = function (host, serviceName, options) {
+exports.load = function(host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
   const client = new Client(host, options);
 
@@ -38,7 +50,9 @@ function rootModuleDir() {
 function getMetaPath(serviceName) {
   const fileName = path.join(IPC_MANIFESTS_FOLDER, `${serviceName}.json`);
 
-  return findUp.sync(fileName, {cwd: rootModuleDir()}) || findUp.sync(fileName);
+  return (
+    findUp.sync(fileName, { cwd: rootModuleDir() }) || findUp.sync(fileName)
+  );
 }
 
 class Client {
@@ -48,14 +62,18 @@ class Client {
     this.host = parsedURL.host;
     this.port = parsedURL.port;
 
-    Object.assign(this, {
-      path: '/rpc',
-    }, options);
+    Object.assign(
+      this,
+      {
+        path: "/rpc"
+      },
+      options
+    );
   }
 
   load(metaFile) {
     if (!metaFile) {
-      throw new Error('invalid metaFile path');
+      throw new Error("invalid metaFile path");
     }
 
     const meta = require(metaFile);
@@ -64,27 +82,28 @@ class Client {
   }
 
   request(methodName, params, timeout) {
-    const requestMeta = {service: this.formatUrl(), method: methodName};
+    const requestMeta = { service: this.formatUrl(), method: methodName };
     const end = requestDuration.startTimer(requestMeta);
 
     requestCount.inc(requestMeta);
 
-    const requestUrl = this.formatUrl(methodName)
+    const requestUrl = this.formatUrl(methodName);
 
-    const result = got.post(requestUrl, {
-      body: JSON.stringify(params),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      json: true,
-      retries: 0,
-      timeout,
-    })
-    .then(res => res.body)
-    .catch(pTap.catch(() => failureCount.inc(requestMeta)))
-    .catch(mapError);
+    const result = got
+      .post(requestUrl, {
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        json: true,
+        retries: 0,
+        timeout
+      })
+      .then(res => res.body)
+      .catch(pTap.catch(() => failureCount.inc(requestMeta)))
+      .catch(mapError);
 
-    return pFinally(result, end)
+    return pFinally(result, end);
   }
 
   formatUrl(methodName) {
@@ -102,21 +121,24 @@ class Client {
     const requestUrl = this.formatUrl();
 
     return got(requestUrl, { json: true })
-    .then(res => res.body)
-    .catch(mapError);
+      .then(res => res.body)
+      .catch(mapError);
   }
 
   createInterface(meta) {
     const rpcInterface = {};
     const multiArg = meta.multiArg || false;
-    const serviceName = meta.serviceName;
+    // const serviceName = meta.serviceName;
     const self = this;
 
     meta.interfaces.forEach(iface => {
-      rpcInterface[iface.methodName] = function () {
+      rpcInterface[iface.methodName] = function() {
         const args = Array.prototype.slice.call(arguments);
         const params = multiArg ? args : args[0];
-        if (!multiArg && params && (typeof params !== 'object')) throw new Error('HTTP RPC expected a single arguments object, or none, simple values are not supported');
+        if (!multiArg && params && typeof params !== "object")
+          throw new Error(
+            "HTTP RPC expected a single arguments object, or none, simple values are not supported"
+          );
         return self.request(iface.methodName, params, iface.methodTimeout);
       };
     });
@@ -126,7 +148,7 @@ class Client {
 
 function mapError(err) {
   if (err.statusCode < 500) {
-    console.log(err);
+    // console.log(err);
     const newErr = new Error(err.response.body.message);
     newErr.code = err.response.body.code;
     throw newErr;
