@@ -1,6 +1,6 @@
 {
   "name": "@loke/http-rpc-client",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,6 @@
     "prom-client": "^11.2.0"
   },
   "dependencies": {
-    "@loke/errors": "0.0.2",
     "find-up": "^1.1.2",
     "got": "^6.3.0",
     "p-finally": "^1.0.0",

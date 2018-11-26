@@ -8,6 +8,31 @@ const app = express()
   })
   .post("/rpc/ping", (req, res) => {
     res.json("pong");
+  })
+  .post("/rpc/basicError", (req, res) => {
+    res
+      .status(400)
+      .json({ message: "Basic error", code: "BASIC", expose: true });
+  })
+  .post("/rpc/lokeError", (req, res) => {
+    res.status(400).json({
+      instance: "01CX7CJC5T4S642MH6MJ2WES0B",
+      message: "LOKE error",
+      namespace: "loke_errors",
+      code: "LOKE",
+      type: "LOKE",
+      expose: true,
+      something: "else"
+    });
+  })
+  .post("/rpc/upstreamError", (req, res) => {
+    res.status(400).json({
+      instance: "01CX7CJC5T4S642MH6MJ2WES0B",
+      message: "Upstream error",
+      code: "Upstream",
+      type: "Upstream",
+      source: ["upstream/callMe", "another/method"]
+    });
   });
 
 exports.create = function() {
