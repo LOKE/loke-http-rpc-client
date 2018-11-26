@@ -55,6 +55,7 @@ test("LOKE error with existing source", async t => {
   await close();
 });
 
+// TODO: if can't find a way for stack trace to start after nextTick then may as well have no stack trace
 test("LOKE error stack trace", async t => {
   const { close, address } = await mockService.create();
 
