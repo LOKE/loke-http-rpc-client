@@ -3,8 +3,6 @@ const url = require("url");
 const path = require("path");
 const got = require("got");
 const findUp = require("find-up");
-const pFinally = require("p-finally");
-const pTap = require("p-tap");
 const { Histogram, Counter } = require("prom-client");
 
 const IPC_MANIFESTS_FOLDER = "ipc_manifests";
@@ -130,7 +128,7 @@ class Client {
     return this.createInterface(meta);
   }
 
-  request(methodName, params, timeout) {
+  async request(methodName, params, timeout) {
     const requestMeta = { service: this.formatUrl(), method: methodName };
     const end = requestDuration.startTimer(requestMeta);
 
@@ -138,8 +136,8 @@ class Client {
 
     const requestUrl = this.formatUrl(methodName);
 
-    const result = got
-      .post(requestUrl, {
+    try {
+      const res = await got.post(requestUrl, {
         body: JSON.stringify(params),
         headers: {
           "Content-Type": "application/json"
@@ -147,12 +145,14 @@ class Client {
         json: true,
         retries: 0,
         timeout
-      })
-      .then(res => res.body)
-      .catch(pTap.catch(() => failureCount.inc(requestMeta)))
-      .catch(err => mapError(this.serviceName, methodName, err));
-
-    return pFinally(result, end);
+      });
+      return res.body;
+    } catch (err) {
+      failureCount.inc(requestMeta);
+      mapError(this.serviceName, methodName, err);
+    } finally {
+      end();
+    }
   }
 
   formatUrl(methodName) {

@@ -23,9 +23,7 @@
   },
   "dependencies": {
     "find-up": "^1.1.2",
-    "got": "^6.3.0",
-    "p-finally": "^1.0.0",
-    "p-tap": "^1.0.0"
+    "got": "^9.3.2"
   },
   "peerDependencies": {
     "prom-client": "7.x"
