@@ -69,7 +69,7 @@ class RpcResponseError extends ExtendableError {
   }
 
   toString() {
-    return `${this.name}: ${this.message} [${this.instance}]`;
+    return `${this.name}: ${this.message} [${this.instance}] at ${this.source}`;
   }
 }
 

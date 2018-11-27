@@ -55,7 +55,7 @@ test("LOKE error with existing source", async t => {
   await close();
 });
 
-// TODO: if can't find a way for stack trace to start after nextTick then may as well have no stack trace
+// NOTE: stack traces are quite useless unless npm module trace is included
 test("LOKE error stack trace", async t => {
   const { close, address } = await mockService.create();
 
@@ -63,7 +63,10 @@ test("LOKE error stack trace", async t => {
 
   const err = await t.throws(client.lokeError());
 
-  t.is(err.stack, "LOKE error");
+  t.regex(
+    err.stack,
+    /RpcResponseError: LOKE error \[01CX7CJC5T4S642MH6MJ2WES0B\] at test-service\/lokeError\n {4}at mapError/
+  );
 
   await close();
 });
