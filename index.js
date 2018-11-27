@@ -39,7 +39,13 @@ class RpcResponseError {
     Object.defineProperty(this, "stack", {
       configurable: true,
       enumerable: false,
-      value: this.toString() + "\n    at " + this.source.join(" <- "),
+      value:
+        this.toString() +
+        "\n" +
+        [...this.source]
+          .reverse()
+          .map(s => "    at " + s)
+          .join("\n"),
       writable: true
     });
   }

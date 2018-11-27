@@ -63,11 +63,12 @@ test("LOKE error stack trace", async t => {
 
   const err = await t.throws(client.upstreamError());
 
-  console.log(err.stack);
-
-  t.regex(
+  t.is(
     err.stack,
-    /RpcResponseError: LOKE error \[01CX7CJC5T4S642MH6MJ2WES0B\]\n {4}at test-service\/upstreamError/
+    `RpcResponseError: Upstream error [01CX7CJC5T4S642MH6MJ2WES0B]
+    at anotherService/anotherMethod
+    at upstream/callMe
+    at test-service/upstreamError`
   );
 
   await close();
