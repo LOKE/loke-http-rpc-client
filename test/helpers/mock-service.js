@@ -31,7 +31,7 @@ const app = express()
       message: "Upstream error",
       code: "Upstream",
       type: "Upstream",
-      source: ["upstream/callMe", "another/method"]
+      source: ["upstream/callMe", "anotherService/anotherMethod"]
     });
   });
 

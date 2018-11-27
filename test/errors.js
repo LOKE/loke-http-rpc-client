@@ -32,7 +32,7 @@ test("LOKE error -> RpcResponseError", async t => {
   t.is(err.something, "else");
   t.is(
     JSON.stringify(err),
-    '{"message":"LOKE error","instance":"01CX7CJC5T4S642MH6MJ2WES0B","namespace":"loke_errors","code":"LOKE","type":"LOKE","expose":true,"something":"else","source":["test-service/lokeError"]}'
+    '{"instance":"01CX7CJC5T4S642MH6MJ2WES0B","message":"LOKE error","namespace":"loke_errors","code":"LOKE","type":"LOKE","expose":true,"something":"else","source":["test-service/lokeError"]}'
   );
   t.deepEqual(err.source, ["test-service/lokeError"]);
 
@@ -49,7 +49,7 @@ test("LOKE error with existing source", async t => {
   t.deepEqual(err.source, [
     "test-service/upstreamError",
     "upstream/callMe",
-    "another/method"
+    "anotherService/anotherMethod"
   ]);
 
   await close();
@@ -61,11 +61,13 @@ test("LOKE error stack trace", async t => {
 
   const client = httpRpcClient.load(address, "test-service");
 
-  const err = await t.throws(client.lokeError());
+  const err = await t.throws(client.upstreamError());
+
+  console.log(err.stack);
 
   t.regex(
     err.stack,
-    /RpcResponseError: LOKE error \[01CX7CJC5T4S642MH6MJ2WES0B\] at test-service\/lokeError\n {4}at mapError/
+    /RpcResponseError: LOKE error \[01CX7CJC5T4S642MH6MJ2WES0B\]\n {4}at test-service\/upstreamError/
   );
 
   await close();

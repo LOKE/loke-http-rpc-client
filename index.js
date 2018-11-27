@@ -23,18 +23,8 @@ const failureCount = new Counter({
   labelNames: ["service", "method"]
 });
 
-class ExtendableError extends Error {
-  constructor(message = "") {
-    super(message);
-
-    // extending Error is weird and does not propagate `message`
-    Object.defineProperty(this, "message", {
-      configurable: true,
-      enumerable: true,
-      value: message,
-      writable: true
-    });
-
+class RpcResponseError {
+  constructor(source, responseBody) {
     Object.defineProperty(this, "name", {
       configurable: true,
       enumerable: false,
@@ -42,26 +32,16 @@ class ExtendableError extends Error {
       writable: true
     });
 
-    if (Error.hasOwnProperty("captureStackTrace")) {
-      Error.captureStackTrace(this, this.constructor);
-      return;
-    }
+    Object.assign(this, responseBody);
+    if (!this.source) this.source = [];
+    this.source.unshift(source);
 
     Object.defineProperty(this, "stack", {
       configurable: true,
       enumerable: false,
-      value: new Error(message).stack,
+      value: this.toString() + "\n    at " + this.source.join(" <- "),
       writable: true
     });
-  }
-}
-
-class RpcResponseError extends ExtendableError {
-  constructor(source, responseBody) {
-    super(responseBody.message);
-    Object.assign(this, responseBody);
-    if (!this.source) this.source = [];
-    this.source.unshift(source);
   }
 
   static get help() {
@@ -69,7 +49,7 @@ class RpcResponseError extends ExtendableError {
   }
 
   toString() {
-    return `${this.name}: ${this.message} [${this.instance}] at ${this.source}`;
+    return `${this.name}: ${this.message} [${this.instance}]`;
   }
 }
 
