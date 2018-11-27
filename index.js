@@ -47,7 +47,7 @@ class RpcResponseError {
         "\n" +
         [...this.source]
           .reverse()
-          .map(s => "    at " + s)
+          .map(s => "    via " + s)
           .join("\n"),
       writable: true
     });
@@ -137,7 +137,8 @@ class Client {
       })
       .then(res => res.body)
       .catch(pTap.catch(() => failureCount.inc(requestMeta)))
-      .catch(mapError);
+      .catch(err => mapError(this.serviceName, methodName, err));
+
     return pFinally(result, end);
   }
 

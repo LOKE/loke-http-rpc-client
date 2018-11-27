@@ -66,9 +66,9 @@ test("LOKE error stack trace", async t => {
   t.is(
     err.stack,
     `RpcResponseError: Upstream error [01CX7CJC5T4S642MH6MJ2WES0B]
-    at anotherService/anotherMethod
-    at upstream/callMe
-    at test-service/upstreamError`
+    via anotherService/anotherMethod
+    via upstream/callMe
+    via test-service/upstreamError`
   );
 
   await close();
