@@ -36,7 +36,7 @@ class RpcResponseError {
 
     Object.assign(this, responseBody);
     if (!this.source) this.source = [];
-    this.source.unshift(source);
+    this.source = [source, ...(this.source || [])];
 
     Object.defineProperty(this, "stack", {
       configurable: true,
