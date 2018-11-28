@@ -22,7 +22,7 @@ const requestCount = new Counter({
 const failureCount = new Counter({
   name: "http_rpc_client_failures_total",
   help: "The total number of rpc failures from the client",
-  labelNames: ["service", "method", "type"]
+  labelNames: ["service", "method", "type", "status_code"]
 });
 
 class RpcResponseError {
@@ -136,7 +136,17 @@ class Client {
       })
       .then(res => res.body)
       .catch(err => {
-        failureCount.inc(Object.assign({ type: err.type }, requestMeta));
+        failureCount.inc(
+          Object.assign(
+            {
+              type:
+                (err.response && err.response.body && err.response.body.type) ||
+                undefined,
+              status_code: err.statusCode
+            },
+            requestMeta
+          )
+        );
         mapError(this.serviceName, methodName, err);
       });
 
