@@ -4,7 +4,6 @@ const path = require("path");
 const got = require("got");
 const findUp = require("find-up");
 const pFinally = require("p-finally");
-const pTap = require("p-tap");
 
 const { Histogram, Counter } = require("prom-client");
 
@@ -23,7 +22,7 @@ const requestCount = new Counter({
 const failureCount = new Counter({
   name: "http_rpc_client_failures_total",
   help: "The total number of rpc failures from the client",
-  labelNames: ["service", "method"]
+  labelNames: ["service", "method", "type"]
 });
 
 class RpcResponseError {
@@ -136,8 +135,10 @@ class Client {
         timeout
       })
       .then(res => res.body)
-      .catch(pTap.catch(() => failureCount.inc(requestMeta)))
-      .catch(err => mapError(this.serviceName, methodName, err));
+      .catch(err => {
+        failureCount.inc(Object.assign({ type: err.type }, requestMeta));
+        mapError(this.serviceName, methodName, err);
+      });
 
     return pFinally(result, end);
   }
