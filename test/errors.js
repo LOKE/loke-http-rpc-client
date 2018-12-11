@@ -9,6 +9,7 @@ test("basic error -> Error", async t => {
 
   const err = await t.throws(client.basicError());
 
+  t.is(err.toString(), "Error: Basic error");
   t.is(err.message, "Basic error");
   t.is(err.name, "Error");
   t.is(err.code, "BASIC");
