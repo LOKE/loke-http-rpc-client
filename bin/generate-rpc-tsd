@@ -2,28 +2,40 @@
 
 const fs = require("fs");
 const { compile } = require("json-schema-to-typescript");
-const { pascalize } = require("humps");
+const { camelize } = require("humps");
 const { join } = require("path");
 
-const baseDir = process.cwd() + "/ipc_manifests";
-const files = fs.readdirSync(process.cwd() + "/ipc_manifests");
+async function main() {
+  const baseDir = process.cwd() + "/ipc_manifests";
+  const files = fs.readdirSync(process.cwd() + "/ipc_manifests");
 
-files.forEach(async file => {
-  const json = await fs.readFileSync(join(baseDir, file), "utf8");
-  const data = JSON.parse(json);
-  const tsd = await typeDefFromMeta(data);
-  console.log(tsd);
-});
+  const tsds = await Promise.all(
+    files.map(async file => {
+      const json = await fs.readFileSync(join(baseDir, file), "utf8");
+      const data = JSON.parse(json);
+      const tsd = await typeDefFromMeta(data);
+      return tsd;
+    })
+  );
+
+  const typedef = [`namespace loke.rpc {`, ...tsds, "}"];
+
+  fs.writeFileSync("rpc.d.ts", typedef.join("\n"), "utf8");
+}
 
 function typeDefFromMeta(meta) {
   return Promise.all(
-    (meta.schemas || []).map(s => compile(s, s.title, { bannerComment: "" }))
+    (meta.schemas || []).map(s =>
+      compile(s, s.title, {
+        bannerComment: "",
+        unreachableDefinitions: false
+      })
+    )
   ).then(types => {
     const service = `
 /** ${meta.help} */
-export interface ${pascalize(meta.serviceName)} {
+export interface Service {
 ${meta.interfaces.map(i => {
-      console.log(i);
       return `
   /** ${i.help} */
   ${i.methodName}(${listParams(i)}): ${returnType(i)}
@@ -31,21 +43,27 @@ ${meta.interfaces.map(i => {
     })}
 }
 `;
-    const typedef = [`namespace loke.rpc {`, ...types, service, "}"];
+    const typedef = [
+      `namespace ${camelize(meta.serviceName)} {`,
+      ...types,
+      service,
+      "}"
+    ];
     return typedef.join("\n");
   });
 }
 
-function listParams(interface) {
-  if (interface.params) {
-    return interface.params
-      .map(p => `${p.name}: ${p.type || "any"}`)
-      .join(", ");
+function listParams(iface) {
+  if (iface.params) {
+    return iface.params.map(p => `${p.name}: ${p.type || "any"}`).join(", ");
   }
 
-  return interface.paramNames.map(p => `${p}: any`).join(", ");
+  return iface.paramNames.map(p => `${p}: any`).join(", ");
 }
 
-function returnType(interface) {
-  return `Promise<${interface.returnType || "any"}>`;
+function returnType(iface) {
+  return `Promise<${iface.returnType || "any"}>`;
 }
+
+// eslint-disable-next-line no-console
+main().catch(console.error);

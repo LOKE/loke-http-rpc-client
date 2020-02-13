@@ -61,6 +61,12 @@ class RpcResponseError {
   }
 }
 
+/**
+ * @param {string} host Host URL to connect to, eg http://localhost:3000
+ * @param {string} serviceName Name of this service, eg my-service
+ * @param {{path?: string}} [options={path: "/rpc"}]
+ * @returns {*} A service constructed from the metadata provided in ipc_manifests
+ */
 exports.load = function(host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
   const client = new Client(host, options);

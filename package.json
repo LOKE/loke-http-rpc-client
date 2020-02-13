@@ -1,8 +1,12 @@
 {
   "name": "@loke/http-rpc-client",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "download-rpc-meta": "./bin/download-rpc-meta",
+    "generate-rpc-tsd": "./bin/generate-rpc-tsd"
+  },
   "scripts": {
     "fix": "eslint . --fix",
     "lint": "eslint .",

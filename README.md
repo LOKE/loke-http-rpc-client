@@ -1,6 +1,6 @@
 # loke-http-rpc-client
 
-Client library for loke-http-rpc server library.
+Client library for `loke-http-rpc` server library.
 
 ## Tools
 
