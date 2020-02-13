@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const http = require("http");
+const fs = require("fs");
+const { join } = require("path");
+
+const [, , name, url] = process.argv;
+
+if (!name || !url) {
+  // eslint-disable-next-line no-console
+  console.log("Please run download-rpc-meta {name} {url}");
+  process.exit(1);
+}
+
+const manifestsDir = join(process.cwd(), "/ipc_manifests");
+
+if (!fs.existsSync(manifestsDir)) {
+  fs.mkdirSync(manifestsDir);
+}
+
+const outFile = join(manifestsDir, name + ".json");
+
+// eslint-disable-next-line no-console
+console.log("Downloading", url, "=>", outFile);
+const file = fs.createWriteStream(outFile);
+http.get(url, response => response.pipe(file));
