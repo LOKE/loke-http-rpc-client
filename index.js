@@ -66,6 +66,9 @@ class Registry {
     this._registeredServices = {};
   }
 
+  /**
+   * Loads the service and returns available methods under each service
+   */
   load(host, serviceName, options) {
     const metaPath = getMetaPath(serviceName);
     const client = new Client(host, options);
@@ -76,7 +79,10 @@ class Registry {
     return loadClient;
   }
 
-  createWellKnownHandler() {
+  /**
+   * Creates an express HTTP handler that serves service metadata
+   */
+  createWellKnownMetaHandler() {
     return (req, res) => {
       const services = Object.keys(this._registeredServices).map((s) => {
         return { name: s };
@@ -89,8 +95,12 @@ class Registry {
   }
 }
 
+/** Default registry */
 exports.registry = new Registry();
 exports.Registry = Registry;
+
+/**  Default path to expose discovery metadata on a well-known URL */
+exports.WELL_KNOWN_META_PATH = "/.well-known/loke-rpc/client";
 
 // exports.createClient = function (host, options) {
 //   return new Client(host, options);

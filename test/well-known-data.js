@@ -5,9 +5,9 @@ import { Registry } from "../";
 test("returns list of loaded services", async (t) => {
   const registry = new Registry();
 
-  registry.load("localhost", "test-service");
+  registry.load("http://localhost:9001", "test-service");
 
-  const wellKnownHandler = registry.createWellKnownHandler();
+  const wellKnownHandler = registry.createWellKnownMetaHandler();
 
   const mockRes = {
     json: sinon.spy(),
