@@ -22,7 +22,7 @@ const app = express()
       code: "LOKE",
       type: "LOKE",
       expose: true,
-      something: "else"
+      something: "else",
     });
   })
   .post("/rpc/upstreamError", (req, res) => {
@@ -31,15 +31,15 @@ const app = express()
       message: "Upstream error",
       code: "Upstream",
       type: "Upstream",
-      source: ["upstream/callMe", "anotherService/anotherMethod"]
+      source: ["upstream/callMe", "anotherService/anotherMethod"],
     });
   });
 
-exports.create = function() {
+exports.create = function () {
   const server = http.createServer(app);
 
   return new Promise((resolve, reject) => {
-    server.listen(0, "127.0.0.1", err => {
+    server.listen(0, "127.0.0.1", (err) => {
       if (err) {
         return reject(err);
       }
@@ -49,7 +49,7 @@ exports.create = function() {
 
       resolve({
         address: `http://${addressString}:${port}`,
-        close: pify(server.close.bind(server))
+        close: pify(server.close.bind(server)),
       });
     });
   });
