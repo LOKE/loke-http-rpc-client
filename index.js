@@ -12,17 +12,17 @@ const IPC_MANIFESTS_FOLDER = "ipc_manifests";
 const requestDuration = new Histogram({
   name: "http_rpc_client_request_duration_seconds",
   help: "Duration of rpc requests from the client",
-  labelNames: ["service", "method"]
+  labelNames: ["service", "method"],
 });
 const requestCount = new Counter({
   name: "http_rpc_client_requests_total",
   help: "The total number of rpc requests from the client",
-  labelNames: ["service", "method"]
+  labelNames: ["service", "method"],
 });
 const failureCount = new Counter({
   name: "http_rpc_client_failures_total",
   help: "The total number of rpc failures from the client",
-  labelNames: ["service", "method", "type", "status_code"]
+  labelNames: ["service", "method", "type", "status_code"],
 });
 
 class RpcResponseError {
@@ -31,7 +31,7 @@ class RpcResponseError {
       configurable: true,
       enumerable: false,
       value: this.constructor.name,
-      writable: true
+      writable: true,
     });
 
     Object.assign(this, responseBody);
@@ -46,9 +46,9 @@ class RpcResponseError {
         "\n" +
         [...this.source]
           .reverse()
-          .map(s => "    via " + s)
+          .map((s) => "    via " + s)
           .join("\n"),
-      writable: true
+      writable: true,
     });
   }
 
@@ -61,7 +61,7 @@ class RpcResponseError {
   }
 }
 
-exports.load = function(host, serviceName, options) {
+exports.load = function (host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
   const client = new Client(host, options);
 
@@ -100,7 +100,7 @@ class Client {
     Object.assign(
       this,
       {
-        path: "/rpc"
+        path: "/rpc",
       },
       options
     );
@@ -128,21 +128,21 @@ class Client {
       .post(requestUrl, {
         body: JSON.stringify(params),
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         json: true,
         retries: 0,
-        timeout
+        timeout,
       })
-      .then(res => res.body)
-      .catch(err => {
+      .then((res) => res.body)
+      .catch((err) => {
         failureCount.inc(
           Object.assign(
             {
               type:
                 (err.response && err.response.body && err.response.body.type) ||
                 undefined,
-              status_code: err.statusCode
+              status_code: err.statusCode,
             },
             requestMeta
           )
@@ -160,7 +160,7 @@ class Client {
       protocol: this.protocol,
       host: this.host,
       port: this.port,
-      pathname: pathname
+      pathname: pathname,
     });
   }
 
@@ -168,8 +168,8 @@ class Client {
     const requestUrl = this.formatUrl();
 
     return got(requestUrl, { json: true })
-      .then(res => res.body)
-      .catch(err => mapError(this.serviceName, "getMeta", err));
+      .then((res) => res.body)
+      .catch((err) => mapError(this.serviceName, "getMeta", err));
   }
 
   createInterface(meta) {
@@ -179,8 +179,8 @@ class Client {
     const multiArg = meta.multiArg || false;
     const self = this;
 
-    meta.interfaces.forEach(iface => {
-      rpcInterface[iface.methodName] = function() {
+    meta.interfaces.forEach((iface) => {
+      rpcInterface[iface.methodName] = function () {
         const args = Array.prototype.slice.call(arguments);
         const params = multiArg ? args : args[0];
         if (!multiArg && params && typeof params !== "object")

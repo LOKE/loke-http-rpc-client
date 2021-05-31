@@ -2,7 +2,7 @@ import test from "ava";
 import httpRpcClient from "../";
 import mockService from "./helpers/mock-service";
 
-test("basic error -> Error", async t => {
+test("basic error -> Error", async (t) => {
   const { close, address } = await mockService.create();
 
   const client = httpRpcClient.load(address, "test-service");
@@ -18,7 +18,7 @@ test("basic error -> Error", async t => {
   await close();
 });
 
-test("LOKE error -> RpcResponseError", async t => {
+test("LOKE error -> RpcResponseError", async (t) => {
   const { close, address } = await mockService.create();
 
   const client = httpRpcClient.load(address, "test-service");
@@ -40,7 +40,7 @@ test("LOKE error -> RpcResponseError", async t => {
   await close();
 });
 
-test("LOKE error with existing source", async t => {
+test("LOKE error with existing source", async (t) => {
   const { close, address } = await mockService.create();
 
   const client = httpRpcClient.load(address, "test-service");
@@ -50,14 +50,14 @@ test("LOKE error with existing source", async t => {
   t.deepEqual(err.source, [
     "test-service/upstreamError",
     "upstream/callMe",
-    "anotherService/anotherMethod"
+    "anotherService/anotherMethod",
   ]);
 
   await close();
 });
 
 // NOTE: stack traces are quite useless unless npm module trace is included
-test("LOKE error stack trace", async t => {
+test("LOKE error stack trace", async (t) => {
   const { close, address } = await mockService.create();
 
   const client = httpRpcClient.load(address, "test-service");
