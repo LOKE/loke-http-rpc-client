@@ -63,7 +63,7 @@ class RpcResponseError {
 
 exports.load = function (host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
-  const client = new Client(host, options);
+  const client = new LegacyClient(host, options);
 
   return client.load(metaPath);
 };
@@ -90,7 +90,7 @@ function getMetaPath(serviceName) {
   );
 }
 
-class Client {
+class LegacyClient {
   constructor(baseURL, options) {
     var parsedURL = url.parse(baseURL);
     this.protocol = parsedURL.protocol;
