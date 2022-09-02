@@ -1,6 +1,6 @@
 import test from "ava";
 import httpRpcClient from "../";
-import mockService from "./helpers/mock-service";
+import mockService from "./helpers/_mock-service";
 
 test("call ping", async (t) => {
   const { close, address } = await mockService.create();
