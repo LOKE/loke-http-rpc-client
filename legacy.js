@@ -5,25 +5,9 @@ const got = require("got");
 const findUp = require("find-up");
 const pFinally = require("p-finally");
 
-const { Histogram, Counter } = require("prom-client");
+const { requestCount, requestDuration, failureCount } = require("./metrics");
 
 const IPC_MANIFESTS_FOLDER = "ipc_manifests";
-
-const requestDuration = new Histogram({
-  name: "http_rpc_client_request_duration_seconds",
-  help: "Duration of rpc requests from the client",
-  labelNames: ["service", "method"],
-});
-const requestCount = new Counter({
-  name: "http_rpc_client_requests_total",
-  help: "The total number of rpc requests from the client",
-  labelNames: ["service", "method"],
-});
-const failureCount = new Counter({
-  name: "http_rpc_client_failures_total",
-  help: "The total number of rpc failures from the client",
-  labelNames: ["service", "method", "type", "status_code"],
-});
 
 class RpcResponseError {
   constructor(source, responseBody) {
@@ -61,6 +45,14 @@ class RpcResponseError {
   }
 }
 
+/**
+ *
+ * @param {string} host
+ * @param {string} serviceName
+ * @param {Object} options
+ * @param {string=} options.path
+ * @returns {any}
+ */
 exports.load = function (host, serviceName, options) {
   const metaPath = getMetaPath(serviceName);
   const client = new LegacyClient(host, options);

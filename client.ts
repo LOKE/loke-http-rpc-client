@@ -1,17 +1,24 @@
+import { AbortController } from "node-abort-controller";
+import fetch from "node-fetch";
+
+import { requestDuration, requestCount, failureCount } from "./metrics";
+
 interface RequestOptions {
   timeout?: number;
 }
 
-export class RPCCleint {
-  baseURL: URL;
+export class RPCClient {
+  private baseURL: URL;
   private serviceName: string;
+  private service: string;
 
-  constructor(baseURL: string) {
+  constructor(baseURL: string, serviceName: string) {
     if (!baseURL.endsWith("/")) {
       baseURL += "/";
     }
+    this.serviceName = serviceName;
     this.baseURL = new URL(baseURL);
-    this.serviceName = this.baseURL.toString().replace(/\/^/, "");
+    this.service = this.baseURL.toString().replace(/\/^/, "");
   }
   async request(
     methodName: string,
@@ -20,16 +27,18 @@ export class RPCCleint {
   ) {
     const url = new URL(methodName, this.baseURL);
 
-    // const requestMeta = { service: this.serviceName, method: methodName };
-    // const end = requestDuration.startTimer(requestMeta);
+    const requestMeta = { service: this.service, method: methodName };
+    const end = requestDuration.startTimer(requestMeta);
+    requestCount.inc(requestMeta);
 
     const { timeout = 60000 } = options;
 
     const controller = new AbortController();
     const tid = setTimeout(() => controller.abort(), timeout);
 
+    let status = -1;
     try {
-      const res = await fetch(url, {
+      const res = await fetch(url.toString(), {
         method: "POST",
         body: JSON.stringify(params),
         headers: {
@@ -44,6 +53,8 @@ export class RPCCleint {
         return res.json();
       }
 
+      status = res.status;
+
       let errResult;
       if (res.headers.get("content-type") === "application/json") {
         errResult = await res.json();
@@ -53,18 +64,17 @@ export class RPCCleint {
           message: await res.text(),
         };
       }
-
       mapError(this.serviceName, methodName, errResult);
-    } catch (err) {
-      // failureCount.inc(...)
+    } catch (err: any) {
+      failureCount.inc({ ...requestMeta, status_code: status, type: err.type });
       throw err;
     } finally {
-      // end();
+      end();
     }
   }
 }
 
-function mapError(serviceName, methodName, errResult) {
+function mapError(serviceName: string, methodName: string, errResult: any) {
   const source = `${serviceName}/${methodName}`;
 
   if (!errResult.type) {
@@ -79,9 +89,9 @@ function mapError(serviceName, methodName, errResult) {
 }
 
 class RpcResponseError {
-  source: string[];
+  source?: string[];
 
-  constructor(source, responseBody) {
+  constructor(source: string, responseBody: any) {
     Object.defineProperty(this, "name", {
       configurable: true,
       enumerable: false,

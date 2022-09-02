@@ -2,16 +2,23 @@
   "name": "@loke/http-rpc-client",
   "version": "3.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "fix": "eslint . --fix",
     "lint": "eslint .",
     "posttest": "npm run lint",
-    "test": "ava -v"
+    "test": "ava -v",
+    "prepare": "npm run build",
+    "build": "rm -rf ./dist && tsc"
   },
   "author": "Dominic Smith",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^18.7.14",
     "ava": "^0.15.2",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
@@ -19,11 +26,14 @@
     "express": "^4.15.2",
     "pify": "^2.3.0",
     "prettier": "^2.3.0",
-    "prom-client": "^12.0.0"
+    "prom-client": "^12.0.0",
+    "typescript": "^4.8.2"
   },
   "dependencies": {
     "find-up": "^1.1.2",
     "got": "^6.3.0",
+    "node-abort-controller": "^3.0.1",
+    "node-fetch": "^3.2.10",
     "p-finally": "^1.0.0"
   },
   "peerDependencies": {
