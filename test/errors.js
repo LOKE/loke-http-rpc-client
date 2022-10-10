@@ -1,13 +1,13 @@
 import test from "ava";
 import httpRpcClient from "../";
-import mockService from "./helpers/mock-service";
+import mockService from "./helpers/_mock-service";
 
 test("basic error -> Error", async (t) => {
   const { close, address } = await mockService.create();
 
   const client = httpRpcClient.load(address, "test-service");
 
-  const err = await t.throws(client.basicError());
+  const err = await t.throwsAsync(client.basicError());
 
   t.is(err.toString(), "Error: Basic error");
   t.is(err.message, "Basic error");
@@ -23,7 +23,7 @@ test("LOKE error -> RpcResponseError", async (t) => {
 
   const client = httpRpcClient.load(address, "test-service");
 
-  const err = await t.throws(client.lokeError());
+  const err = await t.throwsAsync(client.lokeError());
 
   t.is(err.message, "LOKE error");
   t.is(err.name, "RpcResponseError");
@@ -45,7 +45,7 @@ test("LOKE error with existing source", async (t) => {
 
   const client = httpRpcClient.load(address, "test-service");
 
-  const err = await t.throws(client.upstreamError());
+  const err = await t.throwsAsync(client.upstreamError());
 
   t.deepEqual(err.source, [
     "test-service/upstreamError",
@@ -62,7 +62,7 @@ test("LOKE error stack trace", async (t) => {
 
   const client = httpRpcClient.load(address, "test-service");
 
-  const err = await t.throws(client.upstreamError());
+  const err = await t.throwsAsync(client.upstreamError());
 
   t.is(
     err.stack,
