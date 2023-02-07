@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "find-up": "^1.1.2",
-    "got": "^6.3.0",
+    "got": "^11.8.5",
     "node-abort-controller": "^3.0.1",
     "node-fetch": "^2.6.7",
     "p-finally": "^1.0.0"
