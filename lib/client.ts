@@ -163,6 +163,6 @@ export class RPCContextClient extends BaseClient {
     methodName: string,
     params: Record<string, any>
   ) {
-    super.doRequest(ctx, methodName, params);
+    return super.doRequest(ctx, methodName, params);
   }
 }
