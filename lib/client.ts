@@ -1,13 +1,13 @@
-import { AbortController } from "node-abort-controller";
 import fetch from "node-fetch";
+import * as context from "@loke/context";
 
 import { requestDuration, requestCount, failureCount } from "./metrics";
 
-interface RequestOptions {
+export interface RequestOptions {
   timeout?: number;
 }
 
-export class RPCClient {
+class BaseClient {
   private baseURL: URL;
   private serviceName: string;
   private service: string;
@@ -20,7 +20,9 @@ export class RPCClient {
     this.baseURL = new URL(baseURL);
     this.service = this.baseURL.toString().replace(/\/^/, "");
   }
-  async request(
+
+  protected async doRequest(
+    ctx: context.Context,
     methodName: string,
     params: Record<string, any>,
     options: RequestOptions = {}
@@ -31,23 +33,35 @@ export class RPCClient {
     const end = requestDuration.startTimer(requestMeta);
     requestCount.inc(requestMeta);
 
-    const { timeout = 60000 } = options;
-
-    const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), timeout);
+    let abortable = null;
+    if (!ctx.deadline) {
+      abortable = context.withTimeout(ctx, 60000);
+      ctx = abortable.ctx;
+    }
 
     let status = -1;
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      const reqId = context.getRequestId(ctx);
+      if (reqId) {
+        headers["X-Request-ID"] = reqId;
+      }
+
+      if (ctx.deadline) {
+        headers["X-Request-Deadline"] = new Date(ctx.deadline).toISOString();
+      }
+
       const res = await fetch(url.toString(), {
         method: "POST",
         body: JSON.stringify(params),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
+        headers,
+        // AbortSignal signal type is inconsistent between libs,
+        // it is a built-in type so we don't really need that much type safety here
+        signal: ctx.signal as any,
       });
-
-      clearTimeout(tid);
 
       if (res.ok) {
         return res.json();
@@ -69,6 +83,9 @@ export class RPCClient {
       failureCount.inc({ ...requestMeta, status_code: status, type: err.type });
       throw err;
     } finally {
+      if (abortable) {
+        abortable.abort();
+      }
       end();
     }
   }
@@ -115,5 +132,25 @@ class RpcResponseError {
           .join("\n"),
       writable: true,
     });
+  }
+}
+
+export class RPCClient extends BaseClient {
+  async request(
+    methodName: string,
+    params: Record<string, any>,
+    options: RequestOptions = {}
+  ) {
+    super.doRequest(context.TODO, methodName, params, options);
+  }
+}
+
+export class RPCContextClient extends BaseClient {
+  async request(
+    ctx: context.Context,
+    methodName: string,
+    params: Record<string, any>
+  ) {
+    super.doRequest(ctx, methodName, params);
   }
 }
