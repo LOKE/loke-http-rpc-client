@@ -24,8 +24,7 @@ class BaseClient {
   protected async doRequest(
     ctx: context.Context,
     methodName: string,
-    params: Record<string, any>,
-    options: RequestOptions = {}
+    params: Record<string, any>
   ) {
     const url = new URL(methodName, this.baseURL);
 
@@ -141,7 +140,20 @@ export class RPCClient extends BaseClient {
     params: Record<string, any>,
     options: RequestOptions = {}
   ) {
-    super.doRequest(context.TODO, methodName, params, options);
+    if (!options.timeout) {
+      return super.doRequest(context.background, methodName, params);
+    }
+
+    const { ctx, abort } = context.withTimeout(
+      context.background,
+      options.timeout
+    );
+
+    try {
+      return super.doRequest(ctx, methodName, params);
+    } finally {
+      abort();
+    }
   }
 }
 

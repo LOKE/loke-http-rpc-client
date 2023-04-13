@@ -12,3 +12,5 @@ rules:
   linebreak-style:
     - error
     - unix
+ignorePatterns:
+  - "/dist"
