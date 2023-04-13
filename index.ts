@@ -1,4 +1,4 @@
-export { RPCClient } from "./lib/client";
+export { RPCClient, RPCContextClient } from "./lib/client";
 
 import { load as _load } from "./lib/legacy";
 
