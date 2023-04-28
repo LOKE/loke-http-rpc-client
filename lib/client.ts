@@ -63,7 +63,7 @@ class BaseClient {
       });
 
       if (res.ok) {
-        return res.json();
+        return await res.json();
       }
 
       status = res.status;

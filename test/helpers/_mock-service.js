@@ -1,13 +1,18 @@
 const http = require("http");
 const express = require("express");
 const pify = require("pify");
+const bodyParser = require("body-parser");
 
 const app = express()
+  .use(bodyParser.json())
   .get("/rpc", (req, res) => {
     res.json(require("../ipc_manifests/test-service"));
   })
   .post("/rpc/ping", (req, res) => {
     res.json("pong");
+  })
+  .post("/rpc/echo", (req, res) => {
+    res.json(req.body);
   })
   .post("/rpc/basicError", (req, res) => {
     res
