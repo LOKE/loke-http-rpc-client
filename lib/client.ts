@@ -69,7 +69,8 @@ class BaseClient {
       status = res.status;
 
       let errResult;
-      if (res.headers.get("content-type") === "application/json") {
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
         errResult = await res.json();
       } else {
         errResult = {
