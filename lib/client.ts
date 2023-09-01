@@ -63,7 +63,17 @@ class BaseClient {
       });
 
       if (res.ok) {
-        return await res.json();
+        const body = await res.body();
+        
+        // should never be null, don't necessarily need this line
+        if (body === null) return null;
+
+        // could be undefined (but most likely empty string), not json parse-able
+        // interpret empty body as the void response
+        if (!body || body === "") return;
+
+        // should be parse-able now if valid (returning null, string, array or object)
+        return JSON.parse(body);
       }
 
       status = res.status;
