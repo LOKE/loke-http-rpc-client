@@ -63,17 +63,22 @@ class BaseClient {
       });
 
       if (res.ok) {
-        const body = await res.body();
-        
+        // NB: Checking for null here first might be enough
+        // readable stream is null for a response with no body
+        if (res.body === null) return null;
+
+        // body stream to text
+        const text = await res.text();
+
         // should never be null, don't necessarily need this line
-        if (body === null) return null;
+        if (text === null) return null;
 
         // could be undefined (but most likely empty string), not json parse-able
         // interpret empty body as the void response
-        if (!body || body === "") return;
+        if (!text) return;
 
         // should be parse-able now if valid (returning null, string, array or object)
-        return JSON.parse(body);
+        return JSON.parse(text);
       }
 
       status = res.status;
