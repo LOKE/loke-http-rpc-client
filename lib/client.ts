@@ -32,7 +32,7 @@ class BaseClient {
     const end = requestDuration.startTimer(requestMeta);
     requestCount.inc(requestMeta);
 
-    let abortable = null;
+    let abortable: context.Abortable | null = null;
     if (!ctx.deadline) {
       abortable = context.withTimeout(ctx, 60000);
       ctx = abortable.ctx;
@@ -63,6 +63,11 @@ class BaseClient {
       });
 
       if (res.ok) {
+        // handle the 204(ish) case
+        if (res.status === 204 || res.headers.get("content-length") === "0") {
+          return undefined;
+        }
+
         return await res.json();
       }
 
