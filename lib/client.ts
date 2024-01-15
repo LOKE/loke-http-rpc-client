@@ -122,20 +122,22 @@ const EXCLUDED_META_KEYS = [
 
 function logfmt(data: Record<string, any>) {
   // taken from https://github.com/csquared/node-logfmt/blob/master/lib/stringify.js
-  var line = "";
+  // cleaned up a little
+  let line = "";
 
-  for (var key in data) {
+  for (const key in data) {
     if (EXCLUDED_META_KEYS.includes(key)) continue;
 
-    var value = data[key];
-    var is_null = false;
-    if (value == null) {
-      is_null = true;
+    let value = data[key];
+    const is_null = value == null;
+    if (is_null) {
       value = "";
-    } else value = value.toString();
+    } else {
+      value = value.toString();
+    }
 
-    var needs_quoting = value.indexOf(" ") > -1 || value.indexOf("=") > -1;
-    var needs_escaping = value.indexOf('"') > -1 || value.indexOf("\\") > -1;
+    const needs_quoting = value.indexOf(" ") > -1 || value.indexOf("=") > -1;
+    const needs_escaping = value.indexOf('"') > -1 || value.indexOf("\\") > -1;
 
     if (needs_escaping) value = value.replace(/["\\]/g, "\\$&");
     if (needs_quoting || needs_escaping) value = '"' + value + '"';
