@@ -121,8 +121,9 @@ class RpcResponseError {
       writable: true,
     });
 
+    // .message .code .type .expose .instance .type are applied here
     Object.assign(this, responseBody);
-    if (!this.source) this.source = [];
+
     this.source = [source, ...(this.source || [])];
 
     Object.defineProperty(this, "stack", {
@@ -137,6 +138,12 @@ class RpcResponseError {
           .join("\n"),
       writable: true,
     });
+  }
+
+  toString() {
+    // defineProperty not recognized by typescript, nor is the result of assign recognizable
+    const { name, message, instance } = this as any;
+    return `${name}: ${message} [${instance}]`;
   }
 }
 
