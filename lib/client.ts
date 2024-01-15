@@ -110,7 +110,45 @@ function mapError(serviceName: string, methodName: string, errResult: any) {
   throw new RpcResponseError(source, errResult);
 }
 
-class RpcResponseError {
+const EXCLUDED_META_KEYS = [
+  "type",
+  "code",
+  "expose",
+  "message",
+  "namespace",
+  "instance",
+  "source",
+];
+
+function logfmt(data: Record<string, any>) {
+  // taken from https://github.com/csquared/node-logfmt/blob/master/lib/stringify.js
+  var line = "";
+
+  for (var key in data) {
+    if (EXCLUDED_META_KEYS.includes(key)) continue;
+
+    var value = data[key];
+    var is_null = false;
+    if (value == null) {
+      is_null = true;
+      value = "";
+    } else value = value.toString();
+
+    var needs_quoting = value.indexOf(" ") > -1 || value.indexOf("=") > -1;
+    var needs_escaping = value.indexOf('"') > -1 || value.indexOf("\\") > -1;
+
+    if (needs_escaping) value = value.replace(/["\\]/g, "\\$&");
+    if (needs_quoting || needs_escaping) value = '"' + value + '"';
+    if (value === "" && !is_null) value = '""';
+
+    line += key + "=" + value + " ";
+  }
+
+  // trim trailing space
+  return line.substring(0, line.length - 1);
+}
+
+export class RpcResponseError {
   source?: string[];
 
   constructor(source: string, responseBody: any) {
@@ -143,7 +181,9 @@ class RpcResponseError {
   toString() {
     // defineProperty not recognized by typescript, nor is the result of assign recognizable
     const { name, message, instance } = this as any;
-    return `${name}: ${message} [${instance}]`;
+    const meta = logfmt(this);
+
+    return `${name}: ${message} [${instance}]${meta ? " " + meta : ""}`;
   }
 }
 
