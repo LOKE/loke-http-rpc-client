@@ -1,3 +1,4 @@
+import { format } from "util";
 import fetch from "node-fetch";
 import * as context from "@loke/context";
 
@@ -110,7 +111,26 @@ function mapError(serviceName: string, methodName: string, errResult: any) {
   throw new RpcResponseError(source, errResult);
 }
 
-class RpcResponseError {
+const EXCLUDED_META_KEYS = [
+  "type",
+  "code",
+  "expose",
+  "message",
+  "namespace",
+  "instance",
+  "source",
+];
+
+function metaToString(meta: Record<string, any>) {
+  if (!meta) return "";
+
+  return Object.keys(meta)
+    .filter((k) => !EXCLUDED_META_KEYS.includes(k))
+    .map((k) => format("%s=%j", k, meta[k]))
+    .join(" ");
+}
+
+export class RpcResponseError {
   source?: string[];
 
   constructor(source: string, responseBody: any) {
@@ -121,8 +141,9 @@ class RpcResponseError {
       writable: true,
     });
 
+    // .message .code .type .expose .instance .type are applied here
     Object.assign(this, responseBody);
-    if (!this.source) this.source = [];
+
     this.source = [source, ...(this.source || [])];
 
     Object.defineProperty(this, "stack", {
@@ -137,6 +158,14 @@ class RpcResponseError {
           .join("\n"),
       writable: true,
     });
+  }
+
+  toString() {
+    // defineProperty not recognized by typescript, nor is the result of assign recognizable
+    const { name, message, instance } = this as any;
+    const meta = metaToString(this);
+
+    return `${name}: ${message} [${instance}]${meta ? " " + meta : ""}`;
   }
 }
 
