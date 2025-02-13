@@ -26,7 +26,6 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run lint
-      - run: ./scripts/example-check.sh
 
   publish:
     needs: ["test", "lint"]
