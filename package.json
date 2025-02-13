@@ -50,7 +50,7 @@
     "find-up": "^1.1.2",
     "got": "^6.3.0",
     "node-abort-controller": "^3.0.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "2.6.7",
     "p-finally": "^1.0.0"
   },
   "peerDependencies": {
