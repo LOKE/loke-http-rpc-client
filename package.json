@@ -1,6 +1,6 @@
 {
   "name": "@loke/http-rpc-client",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
