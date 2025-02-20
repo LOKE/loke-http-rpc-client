@@ -1,8 +1,8 @@
-import { format } from "util";
-import fetch from "node-fetch";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as context from "@loke/context";
 
 import { requestDuration, requestCount, failureCount } from "./metrics";
+import { RpcHTTPError, RpcResponseError } from "./error";
 
 export interface RequestOptions {
   timeout?: number;
@@ -25,7 +25,7 @@ class BaseClient {
   protected async doRequest(
     ctx: context.Context,
     methodName: string,
-    params: Record<string, any>
+    params: Record<string, unknown>,
   ) {
     const url = new URL(methodName, this.baseURL);
 
@@ -54,14 +54,26 @@ class BaseClient {
         headers["X-Request-Deadline"] = new Date(ctx.deadline).toISOString();
       }
 
-      const res = await fetch(url.toString(), {
-        method: "POST",
-        body: JSON.stringify(params),
-        headers,
-        // AbortSignal signal type is inconsistent between libs,
-        // it is a built-in type so we don't really need that much type safety here
-        signal: ctx.signal as any,
-      });
+      let res;
+      try {
+        res = await fetch(url.toString(), {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers,
+          signal: ctx.signal,
+        });
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          throw err;
+        }
+
+        throw new RpcHTTPError(
+          `request failed [${this.service}].${methodName}`,
+          {
+            cause: err,
+          },
+        );
+      }
 
       if (res.ok) {
         // handle the 204(ish) case
@@ -111,77 +123,19 @@ function mapError(serviceName: string, methodName: string, errResult: any) {
   throw new RpcResponseError(source, errResult);
 }
 
-const EXCLUDED_META_KEYS = [
-  "type",
-  "code",
-  "expose",
-  "message",
-  "namespace",
-  "instance",
-  "source",
-];
-
-function metaToString(meta: Record<string, any>) {
-  if (!meta) return "";
-
-  return Object.keys(meta)
-    .filter((k) => !EXCLUDED_META_KEYS.includes(k))
-    .map((k) => format("%s=%j", k, meta[k]))
-    .join(" ");
-}
-
-export class RpcResponseError {
-  source?: string[];
-
-  constructor(source: string, responseBody: any) {
-    Object.defineProperty(this, "name", {
-      configurable: true,
-      enumerable: false,
-      value: this.constructor.name,
-      writable: true,
-    });
-
-    // .message .code .type .expose .instance .type are applied here
-    Object.assign(this, responseBody);
-
-    this.source = [source, ...(this.source || [])];
-
-    Object.defineProperty(this, "stack", {
-      configurable: true,
-      enumerable: false,
-      value:
-        this.toString() +
-        "\n" +
-        [...this.source]
-          .reverse()
-          .map((s) => "    via " + s)
-          .join("\n"),
-      writable: true,
-    });
-  }
-
-  toString() {
-    // defineProperty not recognized by typescript, nor is the result of assign recognizable
-    const { name, message, instance } = this as any;
-    const meta = metaToString(this);
-
-    return `${name}: ${message} [${instance}]${meta ? " " + meta : ""}`;
-  }
-}
-
 export class RPCClient extends BaseClient {
   async request(
     methodName: string,
-    params: Record<string, any>,
-    options: RequestOptions = {}
-  ) {
+    params: Record<string, unknown>,
+    options: RequestOptions = {},
+  ): Promise<any> {
     if (!options.timeout) {
       return super.doRequest(context.background, methodName, params);
     }
 
     const { ctx, abort } = context.withTimeout(
       context.background,
-      options.timeout
+      options.timeout,
     );
 
     try {
@@ -196,8 +150,8 @@ export class RPCContextClient extends BaseClient {
   async request(
     ctx: context.Context,
     methodName: string,
-    params: Record<string, any>
-  ) {
+    params: Record<string, unknown>,
+  ): Promise<any> {
     return super.doRequest(ctx, methodName, params);
   }
 }
