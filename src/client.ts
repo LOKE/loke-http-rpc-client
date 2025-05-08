@@ -50,6 +50,11 @@ class BaseClient {
         headers["X-Request-ID"] = reqId;
       }
 
+      const actor = context.getActor(ctx);
+      if (actor) {
+        headers["X-Actor"] = actor;
+      }
+
       if (ctx.deadline) {
         headers["X-Request-Deadline"] = new Date(ctx.deadline).toISOString();
       }
