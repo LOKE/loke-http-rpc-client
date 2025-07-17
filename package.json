@@ -46,6 +46,6 @@
     "@loke/context": "^0.1.0"
   },
   "peerDependencies": {
-    "prom-client": ">=12"
+    "prom-client": ">=12 <=15"
   }
 }
