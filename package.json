@@ -1,6 +1,6 @@
 {
   "name": "@loke/http-rpc-client",
-  "version": "5.0.0",
+  "version": "5.1.1",
   "description": "",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -43,9 +43,9 @@
     "typescript-eslint": "^8.21.0"
   },
   "dependencies": {
-    "@loke/context": "^0.0.1"
+    "@loke/context": "^0.1.0"
   },
   "peerDependencies": {
-    "prom-client": ">=12 <=14"
+    "prom-client": ">=12 <=15"
   }
 }
