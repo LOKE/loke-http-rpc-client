@@ -14,7 +14,7 @@ class BaseClient {
   private service: string;
 
   constructor(baseURL: string, serviceName: string) {
-    if (!baseURL.endsWith("/")) {
+    if (!baseURL?.endsWith("/")) {
       baseURL += "/";
     }
     this.serviceName = serviceName;
