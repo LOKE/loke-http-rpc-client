@@ -34,13 +34,14 @@ jobs:
     needs: ["test", "lint"]
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write # required for npm OIDC trusted publishing
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
       - run: npm ci
-      - uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          access: public
+      - run: npm publish --access public
